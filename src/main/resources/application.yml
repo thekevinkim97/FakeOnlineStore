@@ -1,0 +1,6 @@
+app:
+  datasource:
+    jdbc-url: jdbc:postgresql://localhost:5432/fake_store_db
+    username: kevinkim
+    password: passw0rd
+    pool-size: 30
