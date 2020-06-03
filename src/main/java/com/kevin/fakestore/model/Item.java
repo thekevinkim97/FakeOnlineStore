@@ -11,13 +11,13 @@ public class Item {
     @NotBlank
     private final String name;
     @NotNull
-    private final Integer price;
+    private final Double price;
     @NotBlank
     private final String description;
     private final Integer store_quantity;
     private final Integer online_quantity;
 
-    public Item(UUID serial_number, Integer category_id, String name, Integer price, String description, Integer store_quantity, Integer online_quantity) {
+    public Item(UUID serial_number, Integer category_id, String name, Double price, String description, Integer store_quantity, Integer online_quantity) {
         this.serial_number = serial_number;
         this.category_id = category_id;
         this.name = name;
@@ -39,7 +39,7 @@ public class Item {
         return name;
     }
 
-    public Integer getPrice() {
+    public Double getPrice() {
         return price;
     }
 
