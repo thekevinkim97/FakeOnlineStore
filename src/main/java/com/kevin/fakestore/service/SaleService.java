@@ -3,10 +3,12 @@ package com.kevin.fakestore.service;
 import com.kevin.fakestore.dao.StoreDao;
 import com.kevin.fakestore.model.Sale;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class SaleService {
 
     private final StoreDao storeDao;

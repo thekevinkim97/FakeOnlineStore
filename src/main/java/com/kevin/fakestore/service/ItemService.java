@@ -3,11 +3,13 @@ package com.kevin.fakestore.service;
 import com.kevin.fakestore.dao.StoreDao;
 import com.kevin.fakestore.model.Item;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public class ItemService {
 
     private final StoreDao storeDao;
