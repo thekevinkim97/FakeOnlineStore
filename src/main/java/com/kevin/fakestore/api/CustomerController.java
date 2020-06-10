@@ -36,11 +36,6 @@ public class CustomerController {
                 .orElse(null);
     }
 
-    @DeleteMapping(path = "{id}")
-    public void deleteCustomerById(@PathVariable("id") int id) {
-        customerService.deleteCustomer(id);
-    }
-
     @PutMapping(path = "{id}")
     public void updateCustomer(@PathVariable("id") int id, @Valid @NonNull @RequestBody Customer customerToUpdate) {
         customerService.updateCustomer(id, customerToUpdate);

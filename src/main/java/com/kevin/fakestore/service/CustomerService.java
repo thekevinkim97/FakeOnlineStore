@@ -29,10 +29,6 @@ public class CustomerService {
         return storeDao.selectCustomerById(id);
     }
 
-    public int deleteCustomer(int id) {
-        return storeDao.deleteCustomerById(id);
-    }
-
     public int updateCustomer(int id, Customer newCustomer) {
         return storeDao.updateCustomerById(id, newCustomer);
     }

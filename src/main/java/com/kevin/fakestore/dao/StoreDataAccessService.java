@@ -80,17 +80,10 @@ public class StoreDataAccessService implements StoreDao {
     }
 
     @Override
-    public int deleteCustomerById(int id) {
-        final String sql = "DELETE FROM customer WHERE id = ?";
-        return jdbcTemplate.update(sql, id);
-    }
-
-    @Override
     public int updateCustomerById(int id, Customer customer) {
         final String sql = "UPDATE FROM customer WHERE id = ?";
         return jdbcTemplate.update(sql, id, customer);
     }
-
 
     //Items
     @Override
@@ -188,7 +181,6 @@ public class StoreDataAccessService implements StoreDao {
         );
 
         Item item = getItemBySn(sale.getItem_serial_number());
-
         updateStatSale(sale.getId(), item.getPrice());
 
         return iS;
@@ -205,6 +197,24 @@ public class StoreDataAccessService implements StoreDao {
             Date sale_date = Date.valueOf(resultSet.getString("sale_date"));
             return new Sale(id, customer_id, item_serial_number, shipping_address, sale_date);
         });
+    }
+
+    @Override
+    public Sale getSaleById(int id) {
+        final String sql = "SELECT id, customer_id, item_serial_number, shipping_address, sale_date FROM sale WHERE id = ?";
+        Sale sale = jdbcTemplate.queryForObject(
+                sql,
+                new Object[]{id},
+                (resultSet, i) -> {
+                    int idS = Integer.parseInt(resultSet.getString("id"));
+                    int customer_id = Integer.parseInt(resultSet.getString("customer_id"));
+                    UUID item_serial_number = UUID.fromString(resultSet.getString("item_serial_number"));
+                    String shipping_address = resultSet.getString("shipping_address");
+                    Date sale_date = Date.valueOf(resultSet.getString("sale_date"));
+                    return new Sale(idS, customer_id, item_serial_number, shipping_address, sale_date);
+                }
+        );
+        return sale;
     }
 
     @Override
@@ -227,8 +237,23 @@ public class StoreDataAccessService implements StoreDao {
 
     @Override
     public int deleteSaleById(int id) {
+        Sale sale = getSaleById(id);
+        insertRefundById(sale);
+
         final String sql = "DELETE FROM sale WHERE id = ?";
         return jdbcTemplate.update(sql, id);
+    }
+
+    @Override
+    public int insertRefundById(Sale sale) {
+        final String sql = "INSERT INTO refund (sale_id, customer_id, item_serial_number, shipping address) VALUES (?,?,?,?)";
+        return jdbcTemplate.update(
+                sql,
+                sale.getId(),
+                sale.getCustomer_id(),
+                sale.getItem_serial_number(),
+                sale.getShipping_address()
+        );
     }
 
     @Override
@@ -301,7 +326,8 @@ public class StoreDataAccessService implements StoreDao {
 
     @Override
     public int deleteStatById(int id) {
-        return 0;
+        final String sql = "DELETE FROM customer_statistic WHERE customer_id = ?";
+        return jdbcTemplate.update(sql, id);
     }
 
     @Override

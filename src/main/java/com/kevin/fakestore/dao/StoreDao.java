@@ -15,7 +15,6 @@ public interface StoreDao {
     List<Customer> selectAllCustomers();
     Customer selectRecentCustomer();
     Optional<Customer> selectCustomerById(int id);
-    int deleteCustomerById(int id);
     int updateCustomerById(int id, Customer customer);
 
     int insertItem(Item item);
@@ -27,8 +26,10 @@ public interface StoreDao {
 
     int insertSale(Sale sale);
     List<Sale> selectAllSales();
+    Sale getSaleById(int id);
     Optional<Sale> selectSaleById(int id);
     int deleteSaleById(int id);
+    int insertRefundById(Sale sale);
     int updateSaleById(int id, Sale sale);
 
     int insertStat();
