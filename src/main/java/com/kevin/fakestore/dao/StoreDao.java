@@ -1,7 +1,6 @@
 package com.kevin.fakestore.dao;
 
 import com.kevin.fakestore.model.Customer;
-import com.kevin.fakestore.model.CustomerStatistic;
 import com.kevin.fakestore.model.Item;
 import com.kevin.fakestore.model.Sale;
 
@@ -13,7 +12,6 @@ public interface StoreDao {
 
     int insertCustomer(Customer customer);
     List<Customer> selectAllCustomers();
-    Customer selectRecentCustomer();
     Optional<Customer> selectCustomerById(int id);
     int updateCustomerById(int id, Customer customer);
 
@@ -32,11 +30,5 @@ public interface StoreDao {
     int insertRefundById(Sale sale);
     int updateSaleById(int id, Sale sale);
 
-    int insertStat();
     int updateStatSale(int id, double cost);
-    List<CustomerStatistic> selectAllStats();
-    CustomerStatistic getStatById(int id);
-    Optional<CustomerStatistic> selectStatById(int id);
-    int deleteStatById(int id);
-    int updateStatById(int id, CustomerStatistic customerStatistic);
 }

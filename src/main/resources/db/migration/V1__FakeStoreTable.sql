@@ -1,15 +1,10 @@
 CREATE TABLE customer (
     id SERIAL NOT NULL PRIMARY KEY,
     name VARCHAR(75) NOT NULL,
-    email VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE customer_statistic (
-    customer_id INTEGER NOT NULL,
+    email VARCHAR(100) NOT NULL,
     total_sales INTEGER,
     total_spent DECIMAL(8,2),
-    favorite_category INTEGER,
-    FOREIGN KEY (customer_id) REFERENCES customer (id)
+    favorite_category INTEGER
 );
 
 CREATE TABLE item (

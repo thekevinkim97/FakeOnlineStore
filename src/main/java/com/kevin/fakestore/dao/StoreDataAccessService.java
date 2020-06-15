@@ -1,7 +1,6 @@
 package com.kevin.fakestore.dao;
 
 import com.kevin.fakestore.model.Customer;
-import com.kevin.fakestore.model.CustomerStatistic;
 import com.kevin.fakestore.model.Item;
 import com.kevin.fakestore.model.Sale;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,40 +26,25 @@ public class StoreDataAccessService implements StoreDao {
     @Override
     public int insertCustomer(Customer customer) {
         final String sql = "INSERT INTO customer (name, email) VALUES (?,?)";
-        int iC = jdbcTemplate.update(
+        return jdbcTemplate.update(
                 sql,
                 customer.getName(),
                 customer.getEmail()
         );
-        insertStat();
-        return iC;
     }
 
     @Override
     public List<Customer> selectAllCustomers() {
-        final String sql = "SELECT id, name, email FROM customer";
+        final String sql = "SELECT id, name, email, total_sales, total_spent, favorite_category FROM customer";
         return jdbcTemplate.query(sql, (resultSet, i) -> {
             int idC = Integer.parseInt(resultSet.getString ("id"));
             String name = resultSet.getString("name");
             String email = resultSet.getString("email");
-            return new Customer(idC, name, email);
+            int total_sales = Integer.parseInt(resultSet.getString("total_sales"));
+            double total_spent = Double.parseDouble(resultSet.getString("total_spent"));
+            int favorite_category = Integer.parseInt(resultSet.getString("favorite_category"));
+            return new Customer(idC, name, email, total_sales, total_spent, favorite_category);
         });
-    }
-
-    @Override
-    public Customer selectRecentCustomer() {
-        final String sql = "SELECT id, name, email FROM customer ORDER BY id DESC LIMIT 1";
-        Customer customer = jdbcTemplate.queryForObject(
-                sql,
-                new Object[]{},
-                (resultSet, i) -> {
-                    int idC = Integer.parseInt(resultSet.getString("id"));
-                    String name = resultSet.getString("name");
-                    String email = resultSet.getString("email");
-                    return new Customer(idC, name, email);
-                }
-        );
-        return customer;
     }
 
     @Override
@@ -73,7 +57,10 @@ public class StoreDataAccessService implements StoreDao {
                     int idC = Integer.parseInt(resultSet.getString("id"));
                     String name = resultSet.getString("name");
                     String email = resultSet.getString("email");
-                    return new Customer(idC, name, email);
+                    int total_sales = Integer.parseInt(resultSet.getString("total_sales"));
+                    double total_spent = Double.parseDouble(resultSet.getString("total_spent"));
+                    int favorite_category = Integer.parseInt(resultSet.getString("favorite_category"));
+                    return new Customer(idC, name, email, total_sales, total_spent, favorite_category);
                 }
         );
         return Optional.ofNullable(customer);
@@ -265,73 +252,24 @@ public class StoreDataAccessService implements StoreDao {
 
     //Stat
     @Override
-    public int insertStat() {
-        final String sql = "INSERT INTO customer_statistic (customer_id) VALUES (?)";
-        Customer customer = selectRecentCustomer();
-        return jdbcTemplate.update(sql, customer.getId());
-    }
-
-    @Override
     public int updateStatSale(int id, double cost) {
-        final String CS_sql = "SELECT customer_id, total_sales, total_spent, favorite_category FROM customer_statistic WHERE customer_id = ?";
-        CustomerStatistic customerStatistic = jdbcTemplate.queryForObject(
+        final String CS_sql = "SELECT id, name, email, total_sales, total_spent, favorite_category FROM customer WHERE id = ?";
+        Customer customer = jdbcTemplate.queryForObject(
                 CS_sql,
                 new Object[]{id},
                 (resultSet, i) -> {
-                    int idC = Integer.parseInt(resultSet.getString("customer_id"));
+                    int idC = Integer.parseInt(resultSet.getString ("id"));
+                    String name = resultSet.getString("name");
+                    String email = resultSet.getString("email");
                     int total_sales = Integer.parseInt(resultSet.getString("total_sales"));
                     double total_spent = Double.parseDouble(resultSet.getString("total_spent"));
                     int favorite_category = Integer.parseInt(resultSet.getString("favorite_category"));
-                    return new CustomerStatistic(idC, total_sales, total_spent, favorite_category);
+                    return new Customer(idC, name, email, total_sales, total_spent, favorite_category);
                 }
         );
 
-        final String sql = "UPDATE FROM customer_statistic WHERE id = ?";
-        return jdbcTemplate.update(sql, customerStatistic.getTotal_sales()+1, customerStatistic.getTotal_spent()+cost);
+        final String sql = "UPDATE FROM customer WHERE id = ?";
+        return jdbcTemplate.update(sql, customer.getTotal_sales()+1, customer.getTotal_spent()+cost);
     }
 
-    @Override
-    public List<CustomerStatistic> selectAllStats() {
-        final String sql = "SELECT customer_id, total_sales, total_spent, favorite_category FROM customer_statistic";
-        return jdbcTemplate.query(sql, (resultSet, i) -> {
-            int customer_id = Integer.parseInt(resultSet.getString("customer_id"));
-            int total_sales = Integer.parseInt(resultSet.getString("total_sales"));
-            double total_spent = Double.parseDouble(resultSet.getString("total_spent"));
-            int favorite_category = Integer.parseInt(resultSet.getString("favorite_category"));
-            return new CustomerStatistic(customer_id, total_sales, total_spent, favorite_category);
-        });
-    }
-
-    @Override
-    public CustomerStatistic getStatById(int id) {
-        final String sql = "SELECT customer_id, total_sales, total_spent, favorite_category FROM customer_statistic WHERE customer_id = ?";
-        CustomerStatistic customerStatistic = jdbcTemplate.queryForObject(
-                sql,
-                new Object[]{id},
-                (resultSet, i) -> {
-                    int idC = Integer.parseInt(resultSet.getString("customer_id"));
-                    int total_sales = Integer.parseInt(resultSet.getString("total_sales"));
-                    double total_spent = Double.parseDouble(resultSet.getString("total_spent"));
-                    int favorite_category = Integer.parseInt(resultSet.getString("favorite_category"));
-                    return new CustomerStatistic(idC, total_sales, total_spent, favorite_category);
-                }
-        );
-        return customerStatistic;
-    }
-
-    @Override
-    public Optional<CustomerStatistic> selectStatById(int id) {
-        return Optional.empty();
-    }
-
-    @Override
-    public int deleteStatById(int id) {
-        final String sql = "DELETE FROM customer_statistic WHERE customer_id = ?";
-        return jdbcTemplate.update(sql, id);
-    }
-
-    @Override
-    public int updateStatById(int id, CustomerStatistic customerStatistic) {
-        return 0;
-    }
 }
