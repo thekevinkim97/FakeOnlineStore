@@ -168,27 +168,35 @@ public class StoreDataAccessService implements StoreDao {
         );
 
         Item item = getItemBySn(sale.getItem_serial_number());
-        updateStatSale(sale.getId(), item.getPrice());
+        if (sale.getStock_location() == 1) {
+            item.reduceStoreQuantity(sale.getQuantity());
+        } else {
+            item.reduceOnlineQuantity(sale.getQuantity());
+        }
+        updateItemById(item.getSerialNumber(), item);
+        updateStatSale(sale.getId(), item.getPrice()*sale.getQuantity());
 
         return iS;
     }
 
     @Override
     public List<Sale> selectAllSales() {
-        final String sql = "SELECT id, customer_id, item_serial_number, shipping_address, sale_date FROM sale";
+        final String sql = "SELECT id, customer_id, item_serial_number, quantity, stock_location, shipping_address, sale_date FROM sale";
         return jdbcTemplate.query(sql, (resultSet, i) -> {
             int id = Integer.parseInt(resultSet.getString("id"));
             int customer_id = Integer.parseInt(resultSet.getString("customer_id"));
             UUID item_serial_number = UUID.fromString(resultSet.getString("item_serial_number"));
+            int quantity = Integer.parseInt(resultSet.getString("quantity"));
+            int stock_location = Integer.parseInt(resultSet.getString("stock_location"));
             String shipping_address = resultSet.getString("shipping_address");
             Date sale_date = Date.valueOf(resultSet.getString("sale_date"));
-            return new Sale(id, customer_id, item_serial_number, shipping_address, sale_date);
+            return new Sale(id, customer_id, item_serial_number, quantity, stock_location, shipping_address, sale_date);
         });
     }
 
     @Override
     public Sale getSaleById(int id) {
-        final String sql = "SELECT id, customer_id, item_serial_number, shipping_address, sale_date FROM sale WHERE id = ?";
+        final String sql = "SELECT id, customer_id, item_serial_number, quantity, shipping_address, sale_date FROM sale WHERE id = ?";
         Sale sale = jdbcTemplate.queryForObject(
                 sql,
                 new Object[]{id},
@@ -196,9 +204,11 @@ public class StoreDataAccessService implements StoreDao {
                     int idS = Integer.parseInt(resultSet.getString("id"));
                     int customer_id = Integer.parseInt(resultSet.getString("customer_id"));
                     UUID item_serial_number = UUID.fromString(resultSet.getString("item_serial_number"));
+                    int quantity = Integer.parseInt(resultSet.getString("quantity"));
+                    int stock_location = Integer.parseInt(resultSet.getString("stock_location"));
                     String shipping_address = resultSet.getString("shipping_address");
                     Date sale_date = Date.valueOf(resultSet.getString("sale_date"));
-                    return new Sale(idS, customer_id, item_serial_number, shipping_address, sale_date);
+                    return new Sale(idS, customer_id, item_serial_number, quantity, stock_location, shipping_address, sale_date);
                 }
         );
         return sale;
@@ -206,7 +216,7 @@ public class StoreDataAccessService implements StoreDao {
 
     @Override
     public Optional<Sale> selectSaleById(int id) {
-        final String sql = "SELECT id, customer_id, item_serial_number, shipping_address, sale_date FROM sale WHERE id = ?";
+        final String sql = "SELECT id, customer_id, item_serial_number, quantity, shipping_address, sale_date FROM sale WHERE id = ?";
         Sale sale = jdbcTemplate.queryForObject(
                 sql,
                 new Object[]{id},
@@ -214,9 +224,11 @@ public class StoreDataAccessService implements StoreDao {
                     int idS = Integer.parseInt(resultSet.getString("id"));
                     int customer_id = Integer.parseInt(resultSet.getString("customer_id"));
                     UUID item_serial_number = UUID.fromString(resultSet.getString("item_serial_number"));
+                    int quantity = Integer.parseInt(resultSet.getString("quantity"));
+                    int stock_location = Integer.parseInt(resultSet.getString("stock_location"));
                     String shipping_address = resultSet.getString("shipping_address");
                     Date sale_date = Date.valueOf(resultSet.getString("sale_date"));
-                    return new Sale(idS, customer_id, item_serial_number, shipping_address, sale_date);
+                    return new Sale(idS, customer_id, item_serial_number, quantity, stock_location, shipping_address, sale_date);
                 }
         );
         return Optional.ofNullable(sale);
@@ -226,6 +238,15 @@ public class StoreDataAccessService implements StoreDao {
     public int deleteSaleById(int id) {
         Sale sale = getSaleById(id);
         insertRefundById(sale);
+
+        Item item = getItemBySn(sale.getItem_serial_number());
+        if (sale.getStock_location() == 1) {
+            item.increaseStoreQuantity(sale.getQuantity());
+        } else {
+            item.increaseOnlineQuantity(sale.getQuantity());
+        }
+
+        updateItemById(sale.getItem_serial_number(), item);
 
         final String sql = "DELETE FROM sale WHERE id = ?";
         return jdbcTemplate.update(sql, id);

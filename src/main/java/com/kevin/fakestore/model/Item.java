@@ -51,7 +51,23 @@ public class Item {
         return store_quantity;
     }
 
+    public Integer reduceStoreQuantity(int purchased_quantity) {
+        return getStoreQuantity() - purchased_quantity;
+    }
+
+    public Integer increaseStoreQuantity(int purchased_quantity) {
+        return getStoreQuantity() + purchased_quantity;
+    }
+
     public Integer getOnlineQuantity() {
         return online_quantity;
+    }
+
+    public Integer reduceOnlineQuantity(int purchased_quantity) {
+        return getOnlineQuantity() - purchased_quantity;
+    }
+
+    public Integer increaseOnlineQuantity(int purchased_quantity) {
+        return getOnlineQuantity() + purchased_quantity;
     }
 }
