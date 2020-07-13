@@ -30,5 +30,5 @@ public interface StoreDao {
     int insertRefundById(Sale sale);
     int updateSaleById(int id, Sale sale);
 
-    int updateStatSale(int id, double cost);
+    int updateStatSale(int id, double cost, int option);
 }

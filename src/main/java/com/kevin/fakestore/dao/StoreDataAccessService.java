@@ -159,11 +159,13 @@ public class StoreDataAccessService implements StoreDao {
     //Sales
     @Override
     public int insertSale(Sale sale) {
-        final String sql = "INSERT INTO sale (customer_id, item_serial_number, shipping_address) VALUES (?,?,?)";
+        final String sql = "INSERT INTO sale (customer_id, item_serial_number, quantity, stock_location, shipping_address) VALUES (?,?,?,?,?)";
         int iS = jdbcTemplate.update(
                 sql,
                 sale.getCustomer_id(),
                 sale.getItem_serial_number(),
+                sale.getQuantity(),
+                sale.getStock_location(),
                 sale.getShipping_address()
         );
 
@@ -174,7 +176,7 @@ public class StoreDataAccessService implements StoreDao {
             item.reduceOnlineQuantity(sale.getQuantity());
         }
         updateItemById(item.getSerialNumber(), item);
-        updateStatSale(sale.getId(), item.getPrice()*sale.getQuantity());
+        updateStatSale(sale.getId(), item.getPrice()*sale.getQuantity(), 1);
 
         return iS;
     }
@@ -196,7 +198,7 @@ public class StoreDataAccessService implements StoreDao {
 
     @Override
     public Sale getSaleById(int id) {
-        final String sql = "SELECT id, customer_id, item_serial_number, quantity, shipping_address, sale_date FROM sale WHERE id = ?";
+        final String sql = "SELECT id, customer_id, item_serial_number, quantity, stock_location, shipping_address, sale_date FROM sale WHERE id = ?";
         Sale sale = jdbcTemplate.queryForObject(
                 sql,
                 new Object[]{id},
@@ -254,14 +256,27 @@ public class StoreDataAccessService implements StoreDao {
 
     @Override
     public int insertRefundById(Sale sale) {
-        final String sql = "INSERT INTO refund (sale_id, customer_id, item_serial_number, shipping address) VALUES (?,?,?,?)";
-        return jdbcTemplate.update(
+        final String sql = "INSERT INTO refund (sale_id, customer_id, item_serial_number, quantity, stock_location, shipping address) VALUES (?,?,?,?,?,?)";
+        int iR = jdbcTemplate.update(
                 sql,
                 sale.getId(),
                 sale.getCustomer_id(),
                 sale.getItem_serial_number(),
+                sale.getQuantity(),
+                sale.getStock_location(),
                 sale.getShipping_address()
         );
+
+        Item item = getItemBySn(sale.getItem_serial_number());
+        if (sale.getStock_location() == 1) {
+            item.increaseStoreQuantity(sale.getQuantity());
+        } else {
+            item.increaseOnlineQuantity(sale.getQuantity());
+        }
+        updateItemById(item.getSerialNumber(), item);
+        updateStatSale(sale.getId(), item.getPrice()*sale.getQuantity(), 0);
+
+        return iR;
     }
 
     @Override
@@ -273,7 +288,7 @@ public class StoreDataAccessService implements StoreDao {
 
     //Stat
     @Override
-    public int updateStatSale(int id, double cost) {
+    public int updateStatSale(int id, double cost, int option) {
         final String CS_sql = "SELECT id, name, email, total_sales, total_spent, favorite_category FROM customer WHERE id = ?";
         Customer customer = jdbcTemplate.queryForObject(
                 CS_sql,
@@ -289,8 +304,14 @@ public class StoreDataAccessService implements StoreDao {
                 }
         );
 
-        final String sql = "UPDATE FROM customer WHERE id = ?";
-        return jdbcTemplate.update(sql, customer.getTotal_sales()+1, customer.getTotal_spent()+cost);
+        if (option == 1) {
+            final String sql = "UPDATE FROM customer WHERE id = ?";
+            return jdbcTemplate.update(sql, customer.getTotal_sales()+1, customer.getTotal_spent()+cost);
+        }
+        else {
+            final String sql = "UPDATE FROM customer WHERE id = ?";
+            return jdbcTemplate.update(sql, customer.getTotal_sales()-1, customer.getTotal_spent()-cost);
+        }
     }
 
 }

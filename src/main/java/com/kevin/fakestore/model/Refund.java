@@ -13,16 +13,19 @@ public class Refund {
     private final UUID item_serial_number;
     @NotNull
     private final Integer quantity;
+    @NotNull
+    private final Integer stock_location;
     @NotBlank
     private final String shipping_address;
     private final Date refund_date;
 
-    public Refund(Integer id, Integer sale_id, @NotNull Integer customer_id, UUID item_serial_number, @NotNull Integer quantity, @NotBlank String shipping_address, Date refund_date) {
+    public Refund(Integer id, Integer sale_id, @NotNull Integer customer_id, UUID item_serial_number, @NotNull Integer quantity, @NotNull Integer stock_location, @NotBlank String shipping_address, Date refund_date) {
         this.id = id;
         this.sale_id = sale_id;
         this.customer_id = customer_id;
         this.item_serial_number = item_serial_number;
         this.quantity = quantity;
+        this.stock_location = stock_location;
         this.shipping_address = shipping_address;
         this.refund_date = refund_date;
     }
